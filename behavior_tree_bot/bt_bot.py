@@ -22,21 +22,34 @@ from planet_wars import PlanetWars, finish_turn
 # You have to improve this tree or create an entire new one that is capable
 # of winning against all the 5 opponent bots
 def setup_behavior_tree():
+    """
+    Build a behavior tree that attempts multiple strategies in a single turn:
+      1. Defend threatened planets (if needed).
+      2. Expand to neutral (if available).
+      3. Attack enemy (if available).
+    """
+    
+    # 1) Aggressive Expansion
+    expand_seq = Sequence(name='Expand Strategy')
+    expand_check = Check(if_neutral_planet_available)
+    expand_action = Action(spread_to_best_neutral_planet)
+    expand_seq.child_nodes = [expand_check, expand_action]
 
-    # Top-down construction of behavior tree
-    root = Selector(name='High Level Ordering of Strategies')
+    # 2) Aggressive Counterattacks
+    attack_seq = Sequence(name='Attack Strategy')
+    attack_check = Check(if_enemy_planet_available)
+    attack_action = Action(attack_newly_acquired_enemy_planets)  # Focus on newly acquired or weak planets
+    attack_seq.child_nodes = [attack_check, attack_action]
 
-    offensive_plan = Sequence(name='Offensive Strategy')
-    largest_fleet_check = Check(have_largest_fleet)
-    attack = Action(attack_weakest_enemy_planet)
-    offensive_plan.child_nodes = [largest_fleet_check, attack]
+    # 3) Defense
+    defend_seq = Sequence(name='Defend Strategy')
+    defend_check = Check(need_defense)
+    defend_action = Action(defend_weakest_planet)
+    defend_seq.child_nodes = [defend_check, defend_action]
 
-    spread_sequence = Sequence(name='Spread Strategy')
-    neutral_planet_check = Check(if_neutral_planet_available)
-    spread_action = Action(spread_to_weakest_neutral_planet)
-    spread_sequence.child_nodes = [neutral_planet_check, spread_action]
-
-    root.child_nodes = [offensive_plan, spread_sequence, attack.copy()]
+    # Root Strategy: Expand > Attack > Defend
+    root = Selector(name='Root Strategy')
+    root.child_nodes = [expand_seq, attack_seq, defend_seq]
 
     logging.info('\n' + root.tree_to_string())
     return root
