@@ -13,7 +13,7 @@ def have_largest_fleet(state):
 
 def if_enemy_planet_available(state):
     # Check if there is at least one enemy planet available
-    return len(state.enemy_planets()) > 0
+    return any(state.enemy_planets())
 
 def need_defense(state):
     # Check if we have at least one planet that is being threatened
@@ -21,22 +21,10 @@ def need_defense(state):
     # exceeds the ships + incoming friendly fleets.
 
     for my_planet in state.my_planets():
-        incoming_enemy = 0
-        incoming_friendly = 0
-
-        for efleet in state.enemy_fleets():
-            if efleet.destination_planet == my_planet.ID:
-                incoming_enemy += efleet.num_ships
-
-        for ffleet in state.my_fleets():
-            if ffleet.destination_planet == my_planet.ID:
-                incoming_friendly += ffleet.num_ships
-
-        # If incoming enemy fleets are greater than the sum of ships
-        # and incoming friendly fleets, that planet needs defense
+        incoming_enemy = sum(f.num_ships for f in state.enemy_fleets() if f.destination_planet == my_planet.ID)
+        incoming_friendly = sum(f.num_ships for f in state.my_fleets() if f.destination_planet == my_planet.ID)
         if incoming_enemy > (my_planet.num_ships + incoming_friendly):
             return True
-        
     return False
 
 def is_stronger_than_enemy(state):
