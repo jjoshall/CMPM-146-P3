@@ -39,9 +39,6 @@ def spread_to_weakest_neutral_planet(state):
         # (4) Send half the ships from my strongest planet to the weakest enemy planet.
         return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
 
-def calculate_distance(planet_a, planet_b):
-    return math.sqrt((planet_a.x - planet_b.x)**2 + (planet_a.y - planet_b.y)**2)
-
 def defend_weakest_planet(state):
     # Find the weakest planet and send reinforcements from the strongest planet
     if not state.my_planets():
